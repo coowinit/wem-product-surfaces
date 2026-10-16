@@ -1,101 +1,176 @@
 # WEM Product Surfaces
 
-**Stable release:** `v1.0.0`  
-**Requirements:** WordPress 6.0+, PHP 7.4+  
-**Purpose:** Lightweight, reusable image swatches/surface finishes for WordPress and Elementor.
+> 轻量级 WordPress 产品表面色卡管理插件：集中维护木塑（WPC）等产品的表面纹理图片，通过一个 Shortcode 或 PHP 函数，在全站任意支持简码的位置展示全部或指定 Surface。
 
-Each Surface is an independent `wem_surface` WordPress post with a stable **Surface ID**, a **Title** and one **Media Library image**. The front end displays the Title as its caption; the admin editor shows the actual image filename beside the preview. Changing an image or title does not change the Surface ID.
+**当前版本：** `v1.0.0`（首个稳定版）  
+**运行要求：** WordPress 6.0+、PHP 7.4+  
+**适用场景：** 木塑地板、墙板、围栏等产品的表面花纹、色卡和饰面展示
 
-## Features
+## 1. 功能概览
 
-- Central **Surface Library** menu: add, edit, publish, unpublish or trash Surfaces.
-- Choose/replace/remove one image per Surface; view its filename immediately in the editor.
-- Surface list shows preview, title, Surface ID and date.
-- One site-wide Shortcode: **`[wem_surfaces]`**, with optional `ids` and `columns`.
-- PHP theme API: `wem_render_surfaces()`.
-- Responsive grid, original image proportions, WordPress image sizing and lazy loading.
-- **Surface Library → Usage** includes copyable examples. No CPT selection, product association, dedicated Elementor widget or new database tables.
+- **统一管理：** 后台 `Surface Library` 集中新增、编辑、发布、取消发布或移入回收站。
+- **单图色卡：** 每个 Surface 包含一个独立的 **Surface ID**、一个名称（文章标题 Title）和一张媒体库图片。
+- **文件名识别：** Surface 编辑页面的图片预览旁显示真实图片文件名；更换图片时同步更新。
+- **灵活调用：** 一个 `[wem_surfaces]` 简码同时支持展示全部色卡、指定 ID 和指定列数。
+- **全站通用：** 可用于文章、页面、自定义内容类型、Elementor 页面及支持 Shortcode 的模板位置；**无需选择产品 CPT**。
+- **响应式展示：** 图片按原始比例展示；桌面端列数可配置，移动端使用响应式布局。
+- **内置帮助：** 后台 `Surface Library → Usage` 提供简码和 PHP 示例以及复制按钮。
 
-## Install or upgrade
+### 核心概念
 
-1. Back up the WordPress site and database; preferably test on staging first.
-2. Upload the ZIP under **Plugins → Add New → Upload Plugin**. When upgrading, replace the existing plugin (do not run two copies).
-3. Activate the plugin, then open **Surface Library → All Surfaces**.
-4. Add a Surface with **Add New Surface**, enter a Title, choose a Media Library image, and **Publish**.
-5. Copy the numeric **Surface ID** shown in the list, or open **Usage** for examples.
-6. Add a WordPress **Shortcode** block or an Elementor **Shortcode** widget wherever the gallery should appear. Verify the published front end and clear caches as needed.
+| 名称 | 含义 | 是否用于调用 |
+| --- | --- | --- |
+| **Surface ID** | WordPress 为每条 Surface 分配的唯一文章 ID | **是**，填入简码 `ids` |
+| **Surface Title** | 管理员输入的色卡/表面名称 | 前台显示在图片下方 |
+| **Image Attachment ID** | WordPress 媒体库中的图片 ID | 不用于 `ids` 参数 |
+| **图片文件名** | 如 `Bold-Grain.webp` | 仅在后台图片预览旁帮助辨认 |
 
-**Data preservation:** This update does not migrate or delete Surface records, media, IDs, legacy `_wem_surface_ids` product post meta or the unused `wem_ps_product_types` option. The latter two are not read by this plugin.
+例如：Surface `#3300` 的标题为 `Bold-Grain`，当前图片文件名为 `Bold-Grain.webp`。更换图片或修改标题后，**Surface ID 仍不变**，已有的简码无需修改。
 
-## Shortcode reference
+## 2. 安装与升级
 
-| Code | Result |
+1. 建议先备份 WordPress 数据库及 `wp-content/uploads/`，并优先在测试网站验证。
+2. 进入 **插件 → 安装插件 → 上传插件**，上传 `wem-product-surfaces-v1.0.0.zip`。
+3. 如果已有旧版本，选择**替换现有插件**，不要同时启用两份同名插件。
+4. 启用后进入 **Surface Library → All Surfaces**，确认原有色卡仍在。
+5. 按照下方步骤创建色卡，并到 `Usage` 页面查看调用示例。
+
+**数据兼容：** 从 v0.1.x 升级不要求重新创建 Surface。历史产品关联元数据 `_wem_surface_ids` 及旧选项 `wem_ps_product_types` 不会被本插件迁移或主动删除，但当前版本也**不再使用**它们。
+
+## 3. 后台使用方法
+
+### 3.1 创建色卡
+
+1. 打开 **Surface Library → Add New Surface**。
+2. 在标题栏输入 **Surface Title**，例如 `Starshine`。
+3. 在 **Surface Image** 区域点击 **Choose / Replace Image**，从媒体库选择或上传一张图片。
+4. 核对图片预览及旁边显示的实际文件名。
+5. 点击 **Publish** 发布。
+6. 回到 **All Surfaces**，在列表中查看对应的 **Surface ID**。
+
+### 3.2 修改、替换和删除
+
+- **修改名称：** 编辑标题后更新；前台展示名称随之变化。
+- **替换图片：** 选择新图后更新；只要 Surface ID 不变，引用该 ID 的简码会显示新图片。
+- **移除图片：** 保存后，此 Surface 不会生成有效的前台图片卡片。
+- **取消发布或移入回收站：** 该 Surface 不再参与前台展示。
+- **删除 Surface：** 不会连带删除媒体库中的图片文件。
+
+建议采用易于识别的文件名（例如 `Bold-Grain.webp`），但前台显示名称仍以 **Surface Title** 为准。
+
+## 4. Shortcode 简码说明
+
+| 使用目的 | 示例 |
 | --- | --- |
-| `[wem_surfaces]` | All published Surfaces with valid images, ordered by increasing Surface ID |
-| `[wem_surfaces ids="3310"]` | One specific Surface |
-| `[wem_surfaces ids="3310,3300"]` | These Surfaces, in exactly this input order |
-| `[wem_surfaces columns="4"]` | All Surfaces, four desktop columns |
-| `[wem_surfaces ids="3310,3300" columns="2"]` | Selected Surfaces, two desktop columns |
+| 展示所有有效色卡 | `[wem_surfaces]` |
+| 展示一张指定色卡 | `[wem_surfaces ids="3310"]` |
+| 展示指定的多张色卡 | `[wem_surfaces ids="3310,3300"]` |
+| 全部色卡按桌面端 4 列展示 | `[wem_surfaces columns="4"]` |
+| 指定色卡并按桌面端 2 列展示 | `[wem_surfaces ids="3310,3300" columns="2"]` |
 
-- `ids`: optional comma-separated numeric **Surface IDs**, not image attachment IDs or product IDs. Duplicates, invalid IDs, drafts, trashed items and Surfaces without valid images are ignored. An omitted or empty `ids` parameter means **all** published Surfaces.
-- `columns`: desktop grid columns, clamped to **1–6** (default **3**); mobile grid defaults to **2** columns. Custom site CSS may override the grid.
-- For selected IDs, display order follows the shortcode; for all, order is ascending by numeric Surface ID.
-- The displayed caption is **Surface Title**, not the image filename. Actual filenames appear **only in the admin editor**.
-- Shortcodes work where the host content supports WordPress shortcodes. Elementor editor previews may differ in width from the published site.
+**参数说明：**
 
-## PHP template API
+- `ids`：可选，使用逗号分隔的 **Surface ID**。不填写或留空时，显示**所有已发布且图片有效**的色卡。指定 ID 时遵循输入顺序，并自动忽略重复、无效、草稿、回收站或缺失图片的 Surface。
+- `columns`：可选，桌面端列数为 **1–6**，默认 **3**；超出范围会被限制到允许的区间。当前移动端默认 **2 列**，实际效果可能受到主题 CSS 的影响。
+- **排序：** 展示全部时按 Surface ID 从小到大；指定 `ids` 时按输入顺序显示。
+
+> 注意：`ids` 不是产品文章 ID，也不是媒体库图片 ID。此版本**没有** `[wem_product_surfaces]` 简码，也不根据产品自动读取关联色卡。
+
+## 5. Elementor 中使用
+
+1. 打开 Elementor 编辑器，可编辑普通页面、产品内容页面或 Theme Builder 模板。
+2. 在需要展示色卡的位置添加 **Shortcode（简码）** 小工具。
+3. 输入 `[wem_surfaces]`，或输入带 `ids` 的简码。
+4. 保存并检查**实际前台页面**。Elementor 编辑器画布宽度与正式前台可能不同。
+
+**无需设置内容类型。** 插件的表面库与产品 CPT 相互独立，放在哪个可执行 Shortcode 的页面上，就在该位置展示。
+
+## 6. PHP 主题模板调用
+
+展示全部已发布且图片有效的色卡：
 
 ```php
-// All published Surfaces with a valid image.
-echo wem_render_surfaces();
-
-// Selected Surface IDs, in the given order.
-echo wem_render_surfaces([
-    'ids'     => [3310, 3300],
-    'columns' => 2,
-]);
+if (function_exists('wem_render_surfaces')) {
+    echo wem_render_surfaces();
+}
 ```
 
-Calls must run inside WordPress after the plugin is loaded. If your theme is also used without this plugin, guard direct calls with `function_exists('wem_render_surfaces')`.
+只展示指定 Surface，并设置桌面端列数：
 
-## Elementor
+```php
+if (function_exists('wem_render_surfaces')) {
+    echo wem_render_surfaces([
+        'ids'     => [3310, 3300],
+        'columns' => 2,
+    ]);
+}
+```
 
-Open a page, post, custom product or Theme Builder template. Drag the **Shortcode** widget into the desired section and paste `[wem_surfaces]` or `[wem_surfaces ids="..."]`. No product CPT registration or setting is required; the same Surface Library can be used across the site.
+PHP 函数必须在 WordPress 加载插件后调用；`function_exists()` 判断可避免停用插件时主题报错。
 
-## File layout
+## 7. 项目结构
 
 ```text
 wem-product-surfaces/
-├── wem-product-surfaces.php                 # Bootstrap and version
-├── includes/class-wem-product-surfaces.php # CPT, admin, shortcode and PHP renderer
-├── assets/css/admin.css                    # Surface editor / Usage
-├── assets/css/frontend.css                 # Responsive grid
-├── assets/js/admin.js                      # Media Library selection + filename
-├── assets/js/usage.js                      # Copy examples
-├── docs/TESTING.md                         # Release regression checklist
-├── docs/CHANGELOG.md                       # Version history
+├── wem-product-surfaces.php                  # 插件入口、版本信息
+├── includes/
+│   └── class-wem-product-surfaces.php       # CPT、后台管理、查询及渲染
+├── assets/
+│   ├── css/
+│   │   ├── admin.css                        # 后台及 Usage 样式
+│   │   └── frontend.css                     # 前台响应式色卡
+│   └── js/
+│       ├── admin.js                         # 媒体库选图及文件名更新
+│       └── usage.js                         # Usage 示例复制
+├── docs/
+│   ├── CHANGELOG.md                         # 版本记录
+│   └── TESTING.md                           # 发布前验收清单
 └── README.md
 ```
 
-## Compatibility and security
+## 8. 常见问题
 
-Uses standard WordPress CPT/post-meta/media APIs; image saving requires a nonce and `edit_post` capability, and checks the attachment is an image. Front-end entries are limited to published Surface posts with valid image attachments. Rendering escapes captions and column values; WordPress generates image markup. Files are not deleted when a Surface is trashed or the plugin is deactivated.
+**Q：为什么 `[wem_surfaces]` 没有显示任何图片？**  
+A：检查是否已经发布 Surface、是否选择有效媒体库图片、Shortcode 是否放在支持解析简码的区域；必要时清理网站/页面缓存。
 
-The plugin does **not** make its Surface CPT publicly queryable, and does **not** register new permalink routes. Image file URLs still follow your Media Library's existing access policy; this plugin does not add media access restrictions.
+**Q：为什么 `ids="3300"` 没有显示？**  
+A：确认 `3300` 是 **Surface ID** 而不是产品 ID 或图片 ID；对应 Surface 必须已发布且有有效图片。
 
-## Upgrading from experimental versions
+**Q：后台上传的是 `Bold-Grain.webp`，前台显示什么名称？**  
+A：前台显示 Surface 的 **Title**；文件名仅在后台用于识别当前图片。
 
-- v0.1.2 removed `[wem_product_surfaces]` and `wem_render_product_surfaces()`; these do **not** return in v1.0.0. Replace old usages manually with `[wem_surfaces ids="..."]` or `wem_render_surfaces(['ids' => [...]])`.
-- v0.1.3 added the all-Surfaces behavior for `[wem_surfaces]` without `ids`.
-- v0.1.4 restored the read-only **Usage** page without CPT selection.
-- v1.0.0 keeps the documented behavior and adds input-validation hardening and release documentation.
+**Q：为什么修改了色卡，前台仍显示旧图？**  
+A：先确认 Surface 已更新，再清理页面缓存与 CDN 缓存；使用 WP Rocket、Cloudflare 等缓存时尤其需要注意。
 
-## Verification and known limitations
+**Q：可否在任意产品中显示不同色卡？**  
+A：可以。直接在每个产品的 Elementor 页面填写各自的 `ids`，无需事先建立产品关联。
 
-The v0.1.4 workflow was verified by the site owner in WordPress/Elementor. The v1.0.0 release package has been checked for PHP/JS syntax and archive integrity; **v1.0.0 should also be regression-tested on the target site before a public Release**. Refer to [docs/TESTING.md](docs/TESTING.md).
+**Q：是否提供图片弹窗、筛选、自动关联产品或分页？**  
+A：v1.0.0 暂不提供这些功能。全量调用在色卡特别多时可能使页面变长，建议使用 `ids` 选择所需色卡。
 
-The plugin deliberately does not provide search/filter UI, color variation groups, automatic product association, image lightbox, automatic swatch sorting, or pagination. All-Surfaces output may be large for an extensive library; use `ids` to limit display when appropriate.
+## 9. 技术、安全与维护说明
 
-## License
+- 使用 WordPress 原生 CPT、文章元数据和媒体库接口，**不创建自定义数据库表**。
+- 保存图片关联时检查编辑权限、Nonce 和图片附件类型；输出时使用必要的转义与 WordPress 图片 API。
+- 仅输出已发布并关联有效图片的 Surface。该插件不会额外限制媒体库图片 URL 的公开访问权限。
+- Surface CPT 仅用于后台数据管理，不主动创建对外可访问的 Surface 详情页或新固定链接规则。
+- 停用插件不会自动删除 Surface 记录和媒体库文件。
+- 旧版 `[wem_product_surfaces]` 已移除，升级时应手动替换页面和模板中的旧调用。
+- 正式发布前应按 [docs/TESTING.md](docs/TESTING.md) 完成目标站点回归测试；语法检查不能替代真实环境验证。
 
-No license file is included; choose and add an explicit license before distributing to third parties if needed.
+## 10. 版本记录
+
+| 版本 | 主要变化 |
+| --- | --- |
+| **v1.0.0** | 首个稳定版；加强 ID 输入校验、后台图片文件名容错，并完善发布文档 |
+| v0.1.4 | 恢复 Usage 使用说明页，不再选择产品 CPT |
+| v0.1.3 | `[wem_surfaces]` 支持无 `ids` 显示全部色卡 |
+| v0.1.2 | 删除产品自动关联与 `[wem_product_surfaces]`，精简为 Surface ID 直接调用 |
+| v0.1.1 | 图片文件名展示、图片比例与后台列表优化 |
+| v0.1.0 | 初版 Surface Library 与前台渲染 |
+
+详细变更参阅 [docs/CHANGELOG.md](docs/CHANGELOG.md)，正式版验收参阅 [docs/TESTING.md](docs/TESTING.md)。
+
+## 11. 许可说明
+
+当前安装包未附带独立的 `LICENSE` 文件。如计划对外开源或分发，请在仓库中明确添加所选许可证并同步相关说明。
