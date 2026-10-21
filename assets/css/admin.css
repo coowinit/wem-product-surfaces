@@ -13,3 +13,6 @@
 .wem-ps-copy-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
 .wem-ps-copy-row code { padding: 8px 10px; overflow-wrap: anywhere; flex: 1 1 340px; }
 .wem-ps-usage h2 { margin-top: 28px; }
+
+.column-wem_ps_label{width:110px}
+#wem-ps-label-input{max-width:460px}

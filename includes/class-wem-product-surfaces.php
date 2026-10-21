@@ -3,6 +3,7 @@ if (!defined('ABSPATH')) { exit; }
 final class WEM_Product_Surfaces {
     const CPT = 'wem_surface';
     const IMG_META = '_wem_ps_image_id';
+    const LABEL_META = '_wem_ps_label';
     private static $instance = null;
     private static $usage_hook = '';
     public static function boot() {
@@ -34,7 +35,7 @@ final class WEM_Product_Surfaces {
     public function usage_page() {
         if (!current_user_can('edit_posts')) { wp_die(esc_html__('Sorry, you are not allowed to access this page.')); }
         $examples = array(
-            array('Show all surfaces', '[wem_surfaces]', 'All published Surfaces with valid images; ascending Surface ID.'),
+            array('Show all surfaces', '[wem_surfaces]', 'All published Surfaces with valid images; ascending Surface ID; two desktop columns by default.'),
             array('Show one surface', '[wem_surfaces ids="3310"]', 'Replace 3310 with the Surface ID you want.'),
             array('Show selected surfaces', '[wem_surfaces ids="3310,3300"]', 'Displays selected Surfaces in the listed order.'),
             array('Set columns', '[wem_surfaces columns="4"]', 'All Surfaces, four desktop columns (supported: 1–6).'),
@@ -54,10 +55,10 @@ final class WEM_Product_Surfaces {
         foreach ($php_examples as $example) {
             echo '<div class="wem-ps-usage-example"><h3>' . esc_html($example[0]) . '</h3><div class="wem-ps-copy-row"><code>' . esc_html($example[1]) . '</code><button type="button" class="button wem-ps-copy" data-copy="' . esc_attr($example[1]) . '">Copy</button></div></div>';
         }
-        echo '<h2>How to find a Surface ID</h2><p>Go to <strong>Surface Library → All Surfaces</strong> and copy the numeric value in the <strong>Surface ID</strong> column. To create a new Surface, use <strong>Add New Surface</strong>, fill in the title, select one image, and publish.</p>';
+        echo '<h2>How to find a Surface ID</h2><p>Go to <strong>Surface Library → All Surfaces</strong> and copy the numeric value in the <strong>Surface ID</strong> column. To create a new Surface, use <strong>Add New Surface</strong>, fill in the title, optionally enter a short label such as NEW, select one image, and publish.</p>';
         echo '<h2>Elementor</h2><p>Drag in the <strong>Shortcode</strong> widget, paste a shortcode from above, and preview or publish the page. Elementor does not need a dedicated widget from this plugin.</p>';
         echo '<h2>Behavior and notes</h2><p>Only published Surfaces with valid images are displayed. Without <code>ids</code>, Surfaces are ordered by numeric Surface ID ascending; with <code>ids</code>, their input order is retained. Duplicate or invalid IDs are skipped. The front-end layout is responsive, and image proportions are preserved.</p>';
-        echo '<p>The Surface title is the front-end caption; the media filename is shown only in the Surface editor. Existing Surface IDs and images are not changed by this Usage page.</p>';
+        echo '<p>The Surface title is the front-end caption; the optional label appears at the top-left of the image. Leave the label empty to hide it. The media filename is shown only in the Surface editor. Existing Surface IDs and images are not changed by this Usage page.</p>';
         echo '</div>';
     }
     public function register_cpt() {
@@ -71,6 +72,7 @@ final class WEM_Product_Surfaces {
     }
     public function add_boxes() {
         add_meta_box('wem-ps-image', 'Surface Image', array($this, 'image_box'), self::CPT, 'normal', 'high');
+        add_meta_box('wem-ps-label', 'Surface Label (Optional)', array($this, 'label_box'), self::CPT, 'normal', 'default');
     }
     public function image_box($post) {
         wp_nonce_field('wem_ps_save_image', 'wem_ps_image_nonce');
@@ -81,6 +83,13 @@ final class WEM_Product_Surfaces {
         echo '</div><span class="wem-ps-filename" aria-live="polite">' . esc_html($filename) . '</span></div><input type="hidden" name="wem_ps_image_id" class="wem-ps-image-id" value="' . esc_attr($id) . '">';
         echo '<p><button type="button" class="button wem-ps-upload">Choose / Replace image</button> <button type="button" class="button wem-ps-remove">Remove image</button></p></div>';
         echo '<p class="description">One image per Surface. Edit the title above to change its name. The Surface post ID remains stable when the image changes.</p>';
+    }
+    public function label_box($post) {
+        $label = (string) get_post_meta($post->ID, self::LABEL_META, true);
+        wp_nonce_field('wem_ps_save_label', 'wem_ps_label_nonce');
+        echo '<p><label for="wem-ps-label-input">Label</label></p>';
+        echo '<input type="text" class="widefat" id="wem-ps-label-input" name="wem_ps_label" value="' . esc_attr($label) . '" maxlength="40" placeholder="e.g. NEW">';
+        echo '<p class="description">Optional short text shown in the image top-left corner. Leave blank to hide it.</p>';
     }
     private function surface_image($id) {
         $img = absint(get_post_meta($id, self::IMG_META, true));
@@ -95,9 +104,18 @@ final class WEM_Product_Surfaces {
     public function save_surface($post_id) {
         if (!$this->valid_save($post_id, 'wem_ps_image_nonce', 'wem_ps_save_image', self::CPT)) { return; }
         $id = isset($_POST['wem_ps_image_id']) ? absint(wp_unslash($_POST['wem_ps_image_id'])) : 0;
-        if ($id && !wp_attachment_is_image($id)) { return; }
-        if ($id) { update_post_meta($post_id, self::IMG_META, $id); }
-        else { delete_post_meta($post_id, self::IMG_META); }
+        if (!$id || wp_attachment_is_image($id)) {
+            if ($id) { update_post_meta($post_id, self::IMG_META, $id); }
+            else { delete_post_meta($post_id, self::IMG_META); }
+        }
+        if (isset($_POST['wem_ps_label_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['wem_ps_label_nonce'])), 'wem_ps_save_label')) {
+            $label = isset($_POST['wem_ps_label']) && is_string($_POST['wem_ps_label']) ? sanitize_text_field(wp_unslash($_POST['wem_ps_label'])) : '';
+            $label = trim($label);
+            if (function_exists('mb_substr')) { $label = mb_substr($label, 0, 40); }
+            else { $label = substr($label, 0, 40); }
+            if ($label !== '') { update_post_meta($post_id, self::LABEL_META, $label); }
+            else { delete_post_meta($post_id, self::LABEL_META); }
+        }
     }
     public function admin_assets($hook) {
         $screen = get_current_screen();
@@ -117,6 +135,7 @@ final class WEM_Product_Surfaces {
         if (isset($columns['cb'])) { $ordered['cb'] = $columns['cb']; }
         $ordered['wem_ps_img'] = 'Image';
         $ordered['title'] = isset($columns['title']) ? $columns['title'] : 'Surface Name';
+        $ordered['wem_ps_label'] = 'Label';
         $ordered['wem_ps_id'] = 'Surface ID';
         if (isset($columns['date'])) { $ordered['date'] = $columns['date']; }
         foreach ($columns as $key => $label) {
@@ -127,9 +146,15 @@ final class WEM_Product_Surfaces {
     public function column_content($column, $post_id) {
         if ($column === 'wem_ps_id') { echo esc_html($post_id); }
         if ($column === 'wem_ps_img') { echo $this->surface_image($post_id); }
+        if ($column === 'wem_ps_label') { echo esc_html((string) get_post_meta($post_id, self::LABEL_META, true)); }
     }
     public function register_frontend_assets() {
-        wp_register_style('wem-ps-frontend', WEM_PS_URL . 'assets/css/frontend.css', array(), WEM_PS_VERSION);
+        $css_file = dirname(WEM_PS_FILE) . '/assets/css/frontend.css';
+        $js_file = dirname(WEM_PS_FILE) . '/assets/js/lightbox.js';
+        $css_version = file_exists($css_file) ? (string) filemtime($css_file) : WEM_PS_VERSION;
+        $js_version = file_exists($js_file) ? (string) filemtime($js_file) : WEM_PS_VERSION;
+        wp_register_style('wem-ps-frontend', WEM_PS_URL . 'assets/css/frontend.css', array(), $css_version);
+        wp_register_script('wem-ps-lightbox', WEM_PS_URL . 'assets/js/lightbox.js', array(), $js_version, true);
     }
     public static function normalize_ids($raw) {
         if (is_string($raw)) { $raw = explode(',', $raw); }
@@ -148,7 +173,7 @@ final class WEM_Product_Surfaces {
     public static function render_ids($ids, $args = array()) {
         $ids = self::normalize_ids($ids);
         if (!$ids) { return ''; }
-        $columns = isset($args['columns']) ? max(1, min(6, absint($args['columns']))) : 3;
+        $columns = isset($args['columns']) ? max(1, min(6, absint($args['columns']))) : 2;
         $cards = array();
         foreach ($ids as $id) {
             if (get_post_type($id) !== self::CPT || get_post_status($id) !== 'publish') { continue; }
@@ -156,10 +181,16 @@ final class WEM_Product_Surfaces {
             if (!$image_id || !wp_attachment_is_image($image_id)) { continue; }
             $image = wp_get_attachment_image($image_id, 'medium_large', false, array('loading' => 'lazy', 'class' => 'wem-ps-card-image'));
             if (!$image) { continue; }
-            $cards[] = '<figure class="wem-ps-card"><div class="wem-ps-card-media">' . $image . '</div><figcaption class="wem-ps-card-title">' . esc_html(get_the_title($id)) . '</figcaption></figure>';
+            $label = trim((string) get_post_meta($id, self::LABEL_META, true));
+            $badge = $label !== '' ? '<span class="wem-ps-card-label">' . esc_html($label) . '</span>' : '';
+            $full_image_url = wp_get_attachment_image_url($image_id, 'full');
+            $title = get_the_title($id);
+            $clickable_image = $full_image_url ? '<button type="button" class="wem-ps-card-zoom" data-wem-ps-lightbox data-wem-ps-src="' . esc_url($full_image_url) . '" data-title="' . esc_attr($title) . '" aria-label="' . esc_attr(sprintf('View full image: %s', $title)) . '">' . $image . '</button>' : $image;
+            $cards[] = '<figure class="wem-ps-card"><div class="wem-ps-card-media">' . $clickable_image . $badge . '</div><figcaption class="wem-ps-card-title">' . esc_html($title) . '</figcaption></figure>';
         }
         if (!$cards) { return ''; }
         wp_enqueue_style('wem-ps-frontend');
+        wp_enqueue_script('wem-ps-lightbox');
         return '<div class="wem-ps-grid" style="--wem-ps-columns:' . esc_attr($columns) . '">' . implode('', $cards) . '</div>';
     }
     /**
@@ -180,7 +211,7 @@ final class WEM_Product_Surfaces {
         ));
     }
     public function shortcode_ids($atts) {
-        $atts = shortcode_atts(array('ids' => '', 'columns' => 3), $atts, 'wem_surfaces');
+        $atts = shortcode_atts(array('ids' => '', 'columns' => 2), $atts, 'wem_surfaces');
         $raw_ids = is_scalar($atts['ids']) ? trim((string) $atts['ids']) : '';
         $ids = $raw_ids === '' ? self::all_surface_ids() : $raw_ids;
         return self::render_ids($ids, array('columns' => $atts['columns']));
@@ -188,7 +219,7 @@ final class WEM_Product_Surfaces {
 }
 if (!function_exists('wem_render_surfaces')) {
     function wem_render_surfaces($args = array()) {
-        $args = wp_parse_args($args, array('ids' => null, 'columns' => 3));
+        $args = wp_parse_args($args, array('ids' => null, 'columns' => 2));
         // Omit ids or pass an empty value to render all published surfaces.
         $ids = $args['ids'];
         if ($ids === null || $ids === '' || $ids === array()) {

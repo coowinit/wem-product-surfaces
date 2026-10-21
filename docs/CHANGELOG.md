@@ -1,3 +1,11 @@
+## v1.1.0 — 2026-10-21
+
+- 新增可选单行 Surface Label 字段，独立保存到 Post Meta；旧色卡无需迁移。
+- 前端标签绝对定位于图片左上角（10px / 10px），无标签时不输出元素。
+- 默认桌面两列，保留 `columns` 自定义和移动端两列；标题居中、图片维持原图比例。
+- 添加不依赖 Elementor 的原图弹窗（原图 URL、标题说明、Esc/按钮/遮罩关闭）。
+- 更新后台 Usage、列表标签列、README 与测试清单。
+
 # Changelog
 
 ## v1.0.0 — Stable release candidate
