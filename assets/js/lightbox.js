@@ -42,11 +42,14 @@
         if (typeof HTMLDialogElement === 'undefined' || !HTMLDialogElement.prototype.showModal) {
             return; // Ordinary image link remains usable in older browsers.
         }
+        // Intercept before Elementor or theme-level delegated lightboxes handle the link.
         event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
         if (!dialog) { buildDialog(); }
         image.src = target.href;
         image.alt = target.getAttribute('data-title') || '';
         caption.textContent = target.getAttribute('data-title') || '';
         if (!dialog.open) { dialog.showModal(); }
-    });
+    }, true);
 }());
