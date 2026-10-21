@@ -37,17 +37,18 @@
     }
 
     document.addEventListener('click', function (event) {
-        var target = event.target.closest('a[data-wem-ps-lightbox]');
+        var target = event.target.closest('button[data-wem-ps-lightbox]');
         if (!target) { return; }
         if (typeof HTMLDialogElement === 'undefined' || !HTMLDialogElement.prototype.showModal) {
-            return; // Ordinary image link remains usable in older browsers.
+            window.open(target.getAttribute('data-wem-ps-src'), '_blank', 'noopener');
+            return; // Older browsers still provide access to the original image.
         }
         // Intercept before Elementor or theme-level delegated lightboxes handle the link.
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();
         if (!dialog) { buildDialog(); }
-        image.src = target.href;
+        image.src = target.getAttribute('data-wem-ps-src');
         image.alt = target.getAttribute('data-title') || '';
         caption.textContent = target.getAttribute('data-title') || '';
         if (!dialog.open) { dialog.showModal(); }
