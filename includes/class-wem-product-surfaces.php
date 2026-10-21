@@ -181,7 +181,7 @@ final class WEM_Product_Surfaces {
             $badge = $label !== '' ? '<span class="wem-ps-card-label">' . esc_html($label) . '</span>' : '';
             $full_image_url = wp_get_attachment_image_url($image_id, 'full');
             $title = get_the_title($id);
-            $clickable_image = $full_image_url ? '<a class="wem-ps-card-zoom" href="' . esc_url($full_image_url) . '" data-wem-ps-lightbox data-title="' . esc_attr($title) . '" aria-label="' . esc_attr(sprintf('View full image: %s', $title)) . '">' . $image . '</a>' : $image;
+            $clickable_image = $full_image_url ? '<button type="button" class="wem-ps-card-zoom" data-wem-ps-lightbox data-wem-ps-src="' . esc_url($full_image_url) . '" data-title="' . esc_attr($title) . '" aria-label="' . esc_attr(sprintf('View full image: %s', $title)) . '">' . $image . '</button>' : $image;
             $cards[] = '<figure class="wem-ps-card"><div class="wem-ps-card-media">' . $clickable_image . $badge . '</div><figcaption class="wem-ps-card-title">' . esc_html($title) . '</figcaption></figure>';
         }
         if (!$cards) { return ''; }
