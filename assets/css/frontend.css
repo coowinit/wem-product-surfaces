@@ -6,3 +6,13 @@
 .wem-ps-card-title{font-size:16px;line-height:1.5;margin-top:8px;text-align:center;color:inherit}
 @media(max-width:767px){.wem-ps-grid{gap:18px 12px}.wem-ps-card-title{font-size:14px}.wem-ps-card-label{font-size:11px;padding:2px 6px}}
 @media(max-width:420px){.wem-ps-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.wem-ps-card-zoom{display:block;cursor:zoom-in}
+.wem-ps-card-zoom:focus-visible{outline:2px solid #671879;outline-offset:-2px}
+.wem-ps-card-label{pointer-events:none}
+.wem-ps-dialog{box-sizing:border-box;position:fixed;inset:0;margin:auto;padding:44px 20px 18px;width:min(96vw,1200px);max-width:96vw;max-height:95vh;border:0;border-radius:6px;background:#fff;color:#222;box-shadow:0 14px 60px rgba(0,0,0,.3)}
+.wem-ps-dialog::backdrop{background:rgba(0,0,0,.86)}
+.wem-ps-dialog-image{display:block;width:auto;height:auto;max-width:100%;max-height:calc(95vh - 120px);margin:auto;object-fit:contain}
+.wem-ps-dialog-caption{margin:12px 0 0;text-align:center;font-size:15px;line-height:1.5}
+.wem-ps-dialog-close{position:absolute;top:6px;right:10px;width:34px;height:34px;border:0;background:transparent;color:inherit;font-size:28px;line-height:1;cursor:pointer}
+.wem-ps-dialog-close:focus-visible{outline:2px solid currentColor;outline-offset:2px}
