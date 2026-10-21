@@ -42,3 +42,12 @@ Run on a staging site with the same WordPress, Elementor, theme, caching and ima
 - [ ] Verify old `_wem_surface_ids` metadata is left untouched and unused.
 - [ ] Run PHP lint, JS syntax checks, ZIP integrity check, and inspect archive paths.
 - [ ] Publish v1.1.0 only after the above target-site tests pass.
+
+## Lightbox
+
+- [ ] Clicking a Surface photo opens its full media URL in a modal; title appears as caption.
+- [ ] Badge does not appear inside the modal; grid layout remains unchanged.
+- [ ] Escape, close button, and backdrop click close the modal and restore keyboard focus.
+- [ ] With multiple shortcodes on one page, each image opens the correct source.
+- [ ] Without Elementor or any lightbox library, the same feature works.
+- [ ] If dialog support is unavailable, the original image link still opens.
