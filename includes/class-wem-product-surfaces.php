@@ -149,8 +149,12 @@ final class WEM_Product_Surfaces {
         if ($column === 'wem_ps_label') { echo esc_html((string) get_post_meta($post_id, self::LABEL_META, true)); }
     }
     public function register_frontend_assets() {
-        wp_register_style('wem-ps-frontend', WEM_PS_URL . 'assets/css/frontend.css', array(), WEM_PS_VERSION);
-        wp_register_script('wem-ps-lightbox', WEM_PS_URL . 'assets/js/lightbox.js', array(), WEM_PS_VERSION, true);
+        $css_file = dirname(WEM_PS_FILE) . '/assets/css/frontend.css';
+        $js_file = dirname(WEM_PS_FILE) . '/assets/js/lightbox.js';
+        $css_version = file_exists($css_file) ? (string) filemtime($css_file) : WEM_PS_VERSION;
+        $js_version = file_exists($js_file) ? (string) filemtime($js_file) : WEM_PS_VERSION;
+        wp_register_style('wem-ps-frontend', WEM_PS_URL . 'assets/css/frontend.css', array(), $css_version);
+        wp_register_script('wem-ps-lightbox', WEM_PS_URL . 'assets/js/lightbox.js', array(), $js_version, true);
     }
     public static function normalize_ids($raw) {
         if (is_string($raw)) { $raw = explode(',', $raw); }
