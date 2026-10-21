@@ -150,6 +150,7 @@ final class WEM_Product_Surfaces {
     }
     public function register_frontend_assets() {
         wp_register_style('wem-ps-frontend', WEM_PS_URL . 'assets/css/frontend.css', array(), WEM_PS_VERSION);
+        wp_register_script('wem-ps-lightbox', WEM_PS_URL . 'assets/js/lightbox.js', array(), WEM_PS_VERSION, true);
     }
     public static function normalize_ids($raw) {
         if (is_string($raw)) { $raw = explode(',', $raw); }
@@ -178,10 +179,14 @@ final class WEM_Product_Surfaces {
             if (!$image) { continue; }
             $label = trim((string) get_post_meta($id, self::LABEL_META, true));
             $badge = $label !== '' ? '<span class="wem-ps-card-label">' . esc_html($label) . '</span>' : '';
-            $cards[] = '<figure class="wem-ps-card"><div class="wem-ps-card-media">' . $image . $badge . '</div><figcaption class="wem-ps-card-title">' . esc_html(get_the_title($id)) . '</figcaption></figure>';
+            $full_image_url = wp_get_attachment_image_url($image_id, 'full');
+            $title = get_the_title($id);
+            $clickable_image = $full_image_url ? '<a class="wem-ps-card-zoom" href="' . esc_url($full_image_url) . '" data-wem-ps-lightbox data-title="' . esc_attr($title) . '" aria-label="' . esc_attr(sprintf('View full image: %s', $title)) . '">' . $image . '</a>' : $image;
+            $cards[] = '<figure class="wem-ps-card"><div class="wem-ps-card-media">' . $clickable_image . $badge . '</div><figcaption class="wem-ps-card-title">' . esc_html($title) . '</figcaption></figure>';
         }
         if (!$cards) { return ''; }
         wp_enqueue_style('wem-ps-frontend');
+        wp_enqueue_script('wem-ps-lightbox');
         return '<div class="wem-ps-grid" style="--wem-ps-columns:' . esc_attr($columns) . '">' . implode('', $cards) . '</div>';
     }
     /**
