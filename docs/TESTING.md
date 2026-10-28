@@ -21,8 +21,8 @@ Run on a staging site with the same WordPress, Elementor, theme, caching and ima
 
 ## Shortcodes and rendering
 
-- [ ] `[wem_surfaces]` shows all published Surfaces with valid images, in increasing ID order.
-- [ ] `[wem_surfaces ids="3310,3300"]` shows only those IDs, in that order (replace with actual valid IDs).
+- [ ] `[wem_surfaces]` shows labeled Surfaces first, followed by unlabeled Surfaces; each group is in increasing ID order.
+- [ ] `[wem_surfaces ids="3310,3300"]` shows only those IDs; labeled Surfaces appear first, with original ID order preserved within each group (replace with actual valid IDs).
 - [ ] `[wem_surfaces ids="3310,3310,3300"]` displays no duplicate card.
 - [ ] `[wem_surfaces ids="abc,3310,1foo"]` ignores malformed tokens.
 - [ ] `[wem_surfaces columns="4"]` uses four desktop columns; out-of-range values clamp to 1–6.
@@ -51,3 +51,11 @@ Run on a staging site with the same WordPress, Elementor, theme, caching and ima
 - [ ] With multiple shortcodes on one page, each image opens the correct source.
 - [ ] Without Elementor or any lightbox library, the same feature works.
 - [ ] If dialog support is unavailable, the original image link still opens.
+
+## Label-first ordering
+
+- [ ] With a mix of labeled and unlabeled Surface IDs, all non-empty labels (including NEW) render before unlabeled cards.
+- [ ] Within each group, the order provided by the shortcode remains unchanged.
+- [ ] Empty or whitespace-only labels do not receive priority.
+- [ ] Without any labeled Surfaces, the original order remains unchanged.
+- [ ] The same ordering applies to `[wem_surfaces]` and `wem_render_surfaces()`.

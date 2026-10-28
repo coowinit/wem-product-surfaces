@@ -68,6 +68,8 @@
 | 展示所有有效色卡 | `[wem_surfaces]` |
 | 展示一张指定色卡 | `[wem_surfaces ids="3310"]` |
 | 展示指定的多张色卡 | `[wem_surfaces ids="3310,3300"]` |
+
+**前端排序规则：**填写了 Label（例如 `NEW`）的色卡始终优先显示；有标签组与无标签组各自保持 `ids` 中的原始顺序。未填写 Label 时，保持原有排序。
 | 全部色卡按桌面端 4 列展示 | `[wem_surfaces columns="4"]` |
 | 指定色卡并按桌面端 2 列展示 | `[wem_surfaces ids="3310,3300" columns="2"]` |
 

@@ -174,6 +174,19 @@ final class WEM_Product_Surfaces {
         $ids = self::normalize_ids($ids);
         if (!$ids) { return ''; }
         $columns = isset($args['columns']) ? max(1, min(6, absint($args['columns']))) : 2;
+        // Prioritize labeled surfaces while preserving the supplied order within each group.
+        // Only published surfaces with valid images participate in the rendered ordering.
+        $labeled_ids = array();
+        $unlabeled_ids = array();
+        foreach ($ids as $id) {
+            $label = trim((string) get_post_meta($id, self::LABEL_META, true));
+            if ($label !== '') {
+                $labeled_ids[] = $id;
+            } else {
+                $unlabeled_ids[] = $id;
+            }
+        }
+        $ids = array_merge($labeled_ids, $unlabeled_ids);
         $cards = array();
         foreach ($ids as $id) {
             if (get_post_type($id) !== self::CPT || get_post_status($id) !== 'publish') { continue; }

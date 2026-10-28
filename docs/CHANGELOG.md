@@ -1,3 +1,7 @@
+## Unreleased
+
+- Frontend surface cards with non-empty labels now display before unlabeled cards. Order within each group remains stable. No shortcode or data migration required.
+
 ## v1.1.0 — 2026-10-21
 
 - 新增可选单行 Surface Label 字段，独立保存到 Post Meta；旧色卡无需迁移。
